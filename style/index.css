@@ -1,0 +1,25 @@
+@import "./utils.css";
+@import "./sidebar.css";
+@import "./editor.css";
+* {
+  box-sizing: border-box;
+}
+body {
+  margin: 0;
+}
+.app-container {
+  margin: 0 auto;
+}
+
+.sidebar-section {
+  width: 30%;
+  height: 100vh;
+  min-width: 200px;
+  max-width: 300px;
+  background-color: rgb(247, 246, 243);
+}
+
+.editor-section {
+  width: 70%;
+  height: 100vh;
+}

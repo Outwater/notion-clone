@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<head>
+  <title>Outwater's Notion Cloning</title>
+  <link rel="stylesheet" href="/style/index.css" />
+</head>
+<body>
+  <div id="root">
+    <div class="app-container flex">
+      <section class="sidebar-section flex-col">
+        <div>
+          <span class="workspace-title">워크스페이스</span>
+          <div class="button">+</div>
+        </div>
+        <div class="flex-col">
+          <section class="document">
+            <div class="flex">
+              <div class="button">></div>
+              <span class="document-title">1 첫번째 루트 블록</span>
+            </div>
+            <div class="flex">
+              <div class="button flex-end">-</div>
+              <div class="button flex-end">+</div>
+            </div>
+          </section>
+          <section class="document-container child">
+            <section class="document">
+              <div class="flex">
+                <div class="button">></div>
+                <span class="document-title"> 1-1 루트의 첫번째 자식 </span>
+              </div>
+              <div class="flex">
+                <div class="button">-</div>
+                <div class="button">+</div>
+              </div>
+            </section>
+            <section class="document-container child">
+              <section class="document">
+                <div class="flex">
+                  <div class="button">></div>
+                  <span class="document-title">
+                    1-1-1 루트의 첫번째 손자 노드
+                  </span>
+                </div>
+                <div class="flex">
+                  <div class="button">-</div>
+                  <div class="button">+</div>
+                </div>
+              </section>
+            </section>
+          </section>
+          <section class="document">
+            <div class="flex">
+              <div class="button">></div>
+              <span class="document-title">2 두번째 루트 블록</span>
+            </div>
+            <div class="flex">
+              <div class="button">-</div>
+              <div class="button">+</div>
+            </div>
+          </section>
+          <section class="document-container child"></section>
+        </div>
+      </section>
+      <section class="editor-section flex-col">
+        <input class="editor-input" value="title" />
+        <textarea class="editor-content">컨텐츠 내용 </textarea>
+      </section>
+    </div>
+  </div>
+</body>
