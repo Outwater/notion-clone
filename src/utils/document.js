@@ -1,12 +1,13 @@
 function flat(document, depth = 0, flattedDocuments = []) {
   //* 1. 방문한 노드 넣기
-  flattedDocuments.push({
+  const addedDocument = {
     ...document,
     depth,
     isView: true,
-    isOpen: false,
+    isOpen: document.documents.length > 0 ? true : false,
     isLastChild: false,
-  });
+  };
+  flattedDocuments.push(addedDocument);
 
   //* 2. 탈출조건: 자식이 없을 때
   if (document.documents.length === 0) {
