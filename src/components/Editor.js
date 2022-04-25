@@ -2,15 +2,14 @@ import Header from "./Header.js";
 import { $, push, focusEndOfContenteditable } from "../utils/index.js";
 import { getDocument } from "../api/index.js";
 
-//- Todo-refactor-03: app에서 내려온 documentId State와 Editor 내부의 state 구분하기 (보류)
 export default function Editor({ $target, initialState, onEditing, onRemoveItem }) {
-  this.state = initialState; // { currentDocumentId, document: {title, content} }
+  this.state = initialState;
+  // { currentDocumentId, document: {title, content} }
 
   this.setState = (nextState) => {
     this.state = { ...this.state, ...nextState };
   };
 
-  //- TODO_04: 라우트 처리
   this.init = async () => {
     if (this.state.currentDocumentId === "root") {
       $target.innerHTML = `
@@ -21,7 +20,6 @@ export default function Editor({ $target, initialState, onEditing, onRemoveItem 
       return;
     }
     if (this.state.currentDocumentId === "notFound") {
-      console.log("log: Editor init: currentDocumentId가 없습니다. ");
       $target.innerHTML = `
       <div id="not-found-page" class="flex-col items-center justify-center">
         <h1>선택된 도큐먼트가 존재하지 않습니다.</h1>
@@ -32,12 +30,15 @@ export default function Editor({ $target, initialState, onEditing, onRemoveItem 
     }
     $target.innerHTML = this.template();
     this.mounted();
+
     try {
       const currentDocument = await getDocument({ id: this.state.currentDocumentId });
+
       const { title, content } = currentDocument;
       console.log("** fetched Document Data': ", currentDocument);
       this.setState({ document: { title, content } });
       this.render();
+
       if (!title) {
         $(".editor-title").focus();
       } else {
@@ -58,11 +59,11 @@ export default function Editor({ $target, initialState, onEditing, onRemoveItem 
       <input class="editor-title mt-20" placeholder="제목 없음" value="${title}" />
 
       <div class="editor-btn-box visible-off">
-        <button id="btn-text"> T </button> <button id="btn-h2"> H2 </button> <button id="btn-h3"> H3 </button>
-        <button id="btn-bold"> <b>B</b> </button> <button id="btn-italic"> <i>I</i> </button>
-        <button id="btn-underline"> <u>U</u> </button> <button id="btn-strike"> <s>S</s> </button>
-        <button id="btn-ordered-list"> OL </button> <button id="btn-unordered-list"> UL </button>
-        <button id="btn-code"> < > </button>
+        <div class="editor-btn" id="btn-text"> T </div> <div class="editor-btn" id="btn-h2"> H2 </div> <div class="editor-btn" id="btn-h3"> H3 </div>
+        <div class="editor-btn" id="btn-bold"> <b>B</b> </div> <div class="editor-btn" id="btn-italic"> <i>I</i> </div>
+        <div class="editor-btn" id="btn-underline"> <u>U</u> </div> <div class="editor-btn" id="btn-strike"> <s>S</s> </div>
+        <div class="editor-btn" id="btn-ordered-list"> OL </div> <div class="editor-btn" id="btn-unordered-list"> UL </div>
+        <div class="editor-btn" id="btn-code"> < > </div>
       </div>
       <div class="editor-content" id=".editor-content" contenteditable="true"></div>
     `;
@@ -82,8 +83,6 @@ export default function Editor({ $target, initialState, onEditing, onRemoveItem 
       onRemoveItem,
     });
   };
-  //- TODO_03: server 데이터와 연동 (디바운스 처리)
-  //- Todo-refactor-05: event처리 가독성 증가
   this.setEvent = () => {
     $target.addEventListener("mouseup", (e) => {
       let currText = document.getSelection().toString();

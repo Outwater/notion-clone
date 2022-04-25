@@ -18,8 +18,10 @@
 
 ## 보너스 요구사항
 
-- [ ] 기본적으로 편집기는 textarea 기반으로 단순한 텍스트 편집기로 시작하되, 여력이 되면 div와 contentEditable을 조합해서 좀 더 Rich한 에디터를 만들어봅니다.
-- [ ] 편집기 최하단에는 현재 편집 중인 Document의 하위 Document 링크를 렌더링하도록 추가합니다.
+- [x] 기본적으로 편집기는 textarea 기반으로 단순한 텍스트 편집기로 시작하되, 여력이 되면 div와 contentEditable을 조합해서 좀 더 Rich한 에디터를 만들어봅니다.
+  - [x] 텍스트 drag시 보여지는 buttonBox를 통한 텍스트 편집 기능 (`h1, h2, bold, italic, underline, orderList, codeBlick,...`)
+- [x] 편집기 헤더에 현재 편집 중인 Document의 상위 Document 링크를 렌더링하도록 추가합니다.
+- [x] 최근 작업 페이지 저장 후, 불러오기 때 사용
 - [ ] 편집기 내에서 다른 Document name을 적은 경우, 자동으로 해당 Document의 편집 페이지로 이동하는 링크를 거는 기능을 추가합니다.
 - 그외 개선하거나 구현했으면 좋겠다는 부분이 있으면 적극적으로 구현해봅니다!
 

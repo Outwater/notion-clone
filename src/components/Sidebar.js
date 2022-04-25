@@ -1,4 +1,5 @@
 import { plusIcon, trashIcon, openToggleSvg, closeToggleSvg } from "../icons/index.js";
+import { MAX_DOCUMENT_DEPTH } from "../constants/index.js";
 
 export default function Sidebar({
   $target,
@@ -8,7 +9,8 @@ export default function Sidebar({
   onRemoveItem,
   onToggleItem,
 }) {
-  this.state = initialState; // {documentList: [[{id, title, isToggled,depth}, {}], []]}
+  this.state = initialState;
+  // {documentList: [[{id, title, isToggled,depth}, {}]], currentDocumentId: "root"}
 
   this.template = () => {
     const { documentList, currentDocumentId } = this.state;
@@ -23,8 +25,11 @@ export default function Sidebar({
           rootDocument
             .map((document) => {
               const { id, title, depth, isView, isOpen, isLastChild } = document;
+              depth > MAX_DOCUMENT_DEPTH && alert("문서의 최대 깊이는 4개까지 입니다.");
               return `
-              <div class="document depth${depth} ${isView ? "show" : "hide"} 
+              <div class="document depth${
+                depth < MAX_DOCUMENT_DEPTH ? depth : MAX_DOCUMENT_DEPTH
+              } ${isView ? "" : "hide"} 
                 ${Number(currentDocumentId) === id ? "active" : ""}" data-id=${id}>
                 <div class="sidebar-document-left flex">
                   <div id="toggle-btn" class="icon-container">
@@ -51,7 +56,6 @@ export default function Sidebar({
   this.render = () => {
     $target.innerHTML = this.template();
   };
-  //- Todo-refactor-05: event처리 가독성 증가
   this.setEvent = () => {
     $target.addEventListener("click", ({ target }) => {
       if (target.closest(`.document-title`)) {
@@ -73,7 +77,6 @@ export default function Sidebar({
         onRemoveItem(id);
         return;
       }
-      //- TODO_05: 토글에 따른 블록 접기/열기 처리
       if (target.closest("#toggle-btn")) {
         const { id } = target.closest(".document").dataset;
         onToggleItem(id);

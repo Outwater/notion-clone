@@ -46,6 +46,8 @@ const getClickedPosition = (documentList, clickedId) => {
   return [parentIdx, childIdx];
 };
 
+//* 현제 documentList State 형식에 맞게, toggle정보만 변경하여 리턴하는 함수
+//* 명령형, 구현에 집중하여 refactor 필요한 함수라고 생각합니다.
 export const getToggledDocumentList = (documentList, clickedId) => {
   const [parentIdx, childIdx] = getClickedPosition(documentList, clickedId);
   const clickedDocument = documentList[parentIdx][childIdx];

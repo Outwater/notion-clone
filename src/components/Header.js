@@ -7,8 +7,6 @@ export default function Header({ $target, initialState, onRemoveItem }) {
   this.state = initialState; //{id: currentDocumentId}
 
   this.render = async () => {
-    $target.innerHTML = this.template([]);
-    // fetch받아오는 동안그려줌
     const documentList = await getDocumentList();
     const upperDocumentList = await getUpperDocumentList(documentList, Number(this.state.id));
     $target.innerHTML = this.template(upperDocumentList);
@@ -16,16 +14,15 @@ export default function Header({ $target, initialState, onRemoveItem }) {
 
   this.template = (documentList) => {
     return `
-      <div class='flex'>
+      <div class='flex items-baseline'>
         ${documentList
           .map((document, idx, dList) => {
+            const lastIdx = dList.length - 1;
             return `
             <div class='editor-header-title py-5' data-id=${document.id}>
               ${document.title || "제목 없음"}
             </div>
-            ${
-              dList.length - 1 !== idx ? "<span style='color:rgba(55, 53, 47, 0.3)'> / </span>" : ""
-            }`;
+            ${idx === lastIdx ? "" : "<span class='editor-header-dash'> / </span>"}`;
           })
           .join("")}
       </div>
