@@ -10,26 +10,38 @@ import {
   getFlattedDocumentList,
   getToggledDocumentList,
   initRouter,
+  getItem,
+  setItem,
   push,
   $,
 } from "./src/utils/index.js";
+import { RECENT_DOCUMENT_SAVE_KEY } from "./src/constants/index.js";
 
 export default function App({ $target }) {
   this.state = {
     documentList: [],
-    currentDocumentId: null,
+    currentDocumentId: "root",
   };
 
   this.setState = (nextState) => {
     this.state = { ...this.state, ...nextState };
     console.log("!! state변경 <App>: ", this.state);
     this.render();
+
+    const { currentDocumentId } = this.state;
+    if (currentDocumentId !== "root" && currentDocumentId !== "notFound") {
+      setItem(RECENT_DOCUMENT_SAVE_KEY, currentDocumentId);
+    }
   };
 
   this.init = async () => {
     initRouter(() => this.route());
     await updateDocumentList();
     this.route();
+    alert(
+      `   contentEditable 기능이 추가되었습니다.
+      작성한 글을 드래그하여, 다양한 editable 버튼을 사용해보세요!`
+    );
   };
 
   this.template = () => {
@@ -63,10 +75,8 @@ export default function App({ $target }) {
       //- TODO_05: 토글에 따른 접고펼치기 기능
       onToggleItem: (id) => _onToggleItem(id),
     });
-    //TODO_06: 로컬스토리지 임시데이터 저장 기능
-    // let documentLocalSaveKey = `DOCUMENT_SAVE_KEY_${this.state.currentDocumentId}`;
 
-    //Todo-refactor-04: debounce 함수화하여 분리
+    // Todo-refactor-04: debounce 함수화하여 분리
     //- Todo-refactor-03: editor state와 app State 구분 (보류)
     new Editor({
       $target: $(".editor-section"),
@@ -87,16 +97,21 @@ export default function App({ $target }) {
     const { pathname } = window.location;
     console.log("log: route 실행: ", pathname);
     if (pathname === "/") {
-      //TODO_06: localStorage에 최근 작업 id 저장 및 불러오기
-      this.setState({
-        currentDocumentId: "root",
-      });
-    } else if (pathname.indexOf("/documents/") === 0) {
+      const currentDocumentId = getItem(RECENT_DOCUMENT_SAVE_KEY, "root");
+      if (currentDocumentId !== "root") {
+        alert("최근 작업 문서를 불러옵니다.");
+        history.pushState(null, null, `/documents/${currentDocumentId}`);
+      }
+      this.setState({ currentDocumentId });
+      return;
+    }
+
+    if (pathname.indexOf("/documents/") === 0) {
       const [, , currentDocumentId] = pathname.split("/");
       //- Todo-refactor-02: routeFirst로 렌더링최적화
 
-      if (currentDocumentId === "null") {
-        this.setState({ currentDocumentId: null });
+      if (currentDocumentId === "notFound") {
+        this.setState({ currentDocumentId: "notFound" });
         return;
       }
       if (this.state.currentDocumentId !== currentDocumentId) {
@@ -111,8 +126,9 @@ export default function App({ $target }) {
     this.setState({ documentList: getFlattedDocumentList(fetchData) });
   };
 
-  const _onClickItem = (id) => {
+  const _onClickItem = async (id) => {
     push(`/documents/${id}`);
+    await updateDocumentList();
   };
 
   const _onInsertItem = async (id) => {
@@ -128,8 +144,8 @@ export default function App({ $target }) {
     const removedItem = await removeDocument({ id });
     console.log("** removedItem: ", removedItem);
     const parentItemId = removedItem.parent?.id;
-    push(`/documents/${parentItemId || null}`);
-    history.replaceState(null, null, `/documents/${parentItemId || null}`);
+    push(`/documents/${parentItemId || "notFound"}`);
+    history.replaceState(null, null, `/documents/${parentItemId || "notFound"}`);
 
     await updateDocumentList();
   };
@@ -148,7 +164,6 @@ export default function App({ $target }) {
     timer = setTimeout(async () => {
       console.log("** 수정 API : ", [currentDocumentId, document]);
       await updateDocument({ id: currentDocumentId, document });
-      await updateDocumentList();
     }, 3000);
   };
 

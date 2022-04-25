@@ -1,6 +1,7 @@
 import { getDocumentList } from "../api/index.js";
-import { getUpperDocumentList, push } from "../utils/index.js";
-import { trashIcon } from "../icons/index.js";
+import { getUpperDocumentList, removeItem, push } from "../utils/index.js";
+import { homeIcon, trashIcon } from "../icons/index.js";
+import { RECENT_DOCUMENT_SAVE_KEY } from "../constants/index.js";
 
 export default function Header({ $target, initialState, onRemoveItem }) {
   this.state = initialState; //{id: currentDocumentId}
@@ -29,8 +30,11 @@ export default function Header({ $target, initialState, onRemoveItem }) {
           .join("")}
       </div>
       <div class='flex'>
+        <div id='home-btn' class='icon-container'>
+          ${homeIcon}
+        </div>
         <div id='trash-btn' class='icon-container'>
-         ${trashIcon}
+          ${trashIcon}
         </div>
       </div>
     `;
@@ -48,6 +52,11 @@ export default function Header({ $target, initialState, onRemoveItem }) {
         const isConfirm = confirm("정말로 삭제하시겠습니까?");
         if (!isConfirm) return;
         onRemoveItem(this.state.id);
+      }
+
+      if (target.closest(`#home-btn`)) {
+        removeItem(RECENT_DOCUMENT_SAVE_KEY);
+        push("/");
       }
     });
   };

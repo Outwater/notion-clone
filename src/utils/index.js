@@ -6,6 +6,7 @@ import {
   getToggledDocumentList,
   getUpperDocumentList,
 } from "./document.js";
+import { focusEndOfContenteditable } from "./editor.js";
 
 export {
   getFlattedDocumentList,
@@ -17,4 +18,5 @@ export {
   setItem,
   getItem,
   removeItem,
+  focusEndOfContenteditable,
 };

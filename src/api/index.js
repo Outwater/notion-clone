@@ -18,7 +18,7 @@ export const removeDocument = ({ id }) => {
 };
 
 export const updateDocument = async ({ id, document }) => {
-  await request(`/documents/${id}`, {
+  return request(`/documents/${id}`, {
     method: "PUT",
     body: JSON.stringify(document),
   });

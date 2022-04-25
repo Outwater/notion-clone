@@ -46,6 +46,14 @@
   display: none;
 }
 
+.visible-off {
+  visibility: hidden;
+}
+
+.visible-on {
+  visibility: visible;
+}
+
 .depth0 {
   padding-left: 15px;
 }

@@ -1,5 +1,5 @@
 import Header from "./Header.js";
-import { $, push } from "../utils/index.js";
+import { $, push, focusEndOfContenteditable } from "../utils/index.js";
 import { getDocument } from "../api/index.js";
 
 //- Todo-refactor-03: app에서 내려온 documentId State와 Editor 내부의 state 구분하기 (보류)
@@ -8,8 +8,6 @@ export default function Editor({ $target, initialState, onEditing, onRemoveItem 
 
   this.setState = (nextState) => {
     this.state = { ...this.state, ...nextState };
-    console.log("!! State변경 <Editor>: ", this.state);
-    this.render();
   };
 
   //- TODO_04: 라우트 처리
@@ -22,7 +20,7 @@ export default function Editor({ $target, initialState, onEditing, onRemoveItem 
       </div>`;
       return;
     }
-    if (!this.state.currentDocumentId) {
+    if (this.state.currentDocumentId === "notFound") {
       console.log("log: Editor init: currentDocumentId가 없습니다. ");
       $target.innerHTML = `
       <div id="not-found-page" class="flex-col items-center justify-center">
@@ -38,29 +36,41 @@ export default function Editor({ $target, initialState, onEditing, onRemoveItem 
       const currentDocument = await getDocument({ id: this.state.currentDocumentId });
       const { title, content } = currentDocument;
       console.log("** fetched Document Data': ", currentDocument);
-      $(".editor-title").focus();
       this.setState({ document: { title, content } });
+      this.render();
+      if (!title) {
+        $(".editor-title").focus();
+      } else {
+        focusEndOfContenteditable($(".editor-content"));
+      }
     } catch (e) {
       if (e.name === "NoDocumentError") {
-        push(`/documents/null`);
+        push(`/documents/notFound`);
       }
     }
   };
 
   this.template = () => {
-    const { title, content } = this.state.document;
+    const { title } = this.state.document;
     console.log("<<  <Editor>  렌더링");
     return `
       <header class="editor-header flex justify-between items-center "></header>
       <input class="editor-title mt-20" placeholder="제목 없음" value="${title}" />
-      <textarea class="editor-content" placeholder="내용 없음">${content}</textarea>
+
+      <div class="editor-btn-box visible-off">
+        <button id="btn-text"> T </button> <button id="btn-h2"> H2 </button> <button id="btn-h3"> H3 </button>
+        <button id="btn-bold"> <b>B</b> </button> <button id="btn-italic"> <i>I</i> </button>
+        <button id="btn-underline"> <u>U</u> </button> <button id="btn-strike"> <s>S</s> </button>
+        <button id="btn-ordered-list"> OL </button> <button id="btn-unordered-list"> UL </button>
+        <button id="btn-code"> < > </button>
+      </div>
+      <div class="editor-content" id=".editor-content" contenteditable="true"></div>
     `;
   };
-
   this.render = () => {
     const { title, content } = this.state.document;
     $(".editor-title").value = title;
-    $(".editor-content").textContent = content;
+    $(".editor-content").innerHTML = content;
   };
 
   this.mounted = () => {
@@ -75,28 +85,77 @@ export default function Editor({ $target, initialState, onEditing, onRemoveItem 
   //- TODO_03: server 데이터와 연동 (디바운스 처리)
   //- Todo-refactor-05: event처리 가독성 증가
   this.setEvent = () => {
-    $target.addEventListener("keyup", (e) => {
-      const { document, currentDocumentId } = this.state;
-      if (!e.target.closest(".editor-title")) return;
-
-      this.setState({
-        document: { ...document, title: e.target.value },
-      });
-      $(`[data-id='${currentDocumentId}'] .document-title`).textContent = e.target.value;
-      $(`[data-id='${currentDocumentId}'].editor-header-title`).textContent = e.target.value;
-      onEditing(this.state);
+    $target.addEventListener("mouseup", (e) => {
+      let currText = document.getSelection().toString();
+      if (currText.length > 0) {
+        $(".editor-btn-box").classList.add("visible-on");
+      }
     });
 
-    $target.addEventListener("input", (e) => {
-      if (!e.target.closest(".editor-content")) return;
+    $target.addEventListener("keyup", (e) => {
+      const { document, currentDocumentId } = this.state;
+      if (e.target.closest(".editor-content")) {
+        this.setState({ document: { ...document, content: e.target.innerHTML } });
+        onEditing(this.state);
+      }
+      if (e.target.closest(".editor-title")) {
+        this.setState({
+          document: { ...document, title: e.target.value },
+        });
+        $(`[data-id='${currentDocumentId}'] .document-title`).textContent = e.target.value;
+        $(`[data-id='${currentDocumentId}'].editor-header-title`).textContent = e.target.value;
+        onEditing(this.state);
+      }
+    });
 
-      this.setState({
-        document: {
-          ...this.state.document,
-          content: e.target.value,
-        },
-      });
-      onEditing(this.state);
+    $target.addEventListener("mousedown", ({ target }) => {
+      const setStyle = (style, isCustom = false) => {
+        if (!isCustom) {
+          document.execCommand(style);
+        } else {
+          if (style === "text") {
+            document.execCommand("formatBlock", false, "div");
+            document.execCommand("backColor", false, "white");
+            document.execCommand("foreColor", false, "black");
+            document.execCommand("fontSize", false, "3");
+          } else if (style === "h2") {
+            document.execCommand("formatBlock", false, "h2");
+          } else if (style === "h3") {
+            document.execCommand("formatBlock", false, "h3");
+          } else if (style === "codeBlock") {
+            document.execCommand("backColor", false, "rgba(135,131,120,0.15)");
+            document.execCommand("foreColor", false, "#EB5757");
+            document.execCommand("fontSize", false, "2");
+          }
+        }
+        this.setState({
+          document: { ...document, content: $(".editor-content").innerHTML },
+        });
+        onEditing(this.state);
+      };
+
+      if (target.closest("#btn-bold")) {
+        setStyle("bold");
+      } else if (target.closest("#btn-italic")) {
+        setStyle("italic");
+      } else if (target.closest("#btn-underline")) {
+        setStyle("underline");
+      } else if (target.closest("#btn-strike")) {
+        setStyle("strikeThrough");
+      } else if (target.closest("#btn-ordered-list")) {
+        setStyle("insertOrderedList");
+      } else if (target.closest("#btn-unordered-list")) {
+        setStyle("insertUnorderedList");
+      } else if (target.closest("#btn-text")) {
+        setStyle("text", true);
+      } else if (target.closest("#btn-h2")) {
+        setStyle("h2", true);
+      } else if (target.closest("#btn-h3")) {
+        setStyle("h3", true);
+      } else if (target.closest("#btn-code")) {
+        setStyle("codeBlock", true);
+      }
+      $(".editor-btn-box").classList.remove("visible-on");
     });
   };
 
